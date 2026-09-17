@@ -317,12 +317,19 @@
     STEPS.forEach(function (step) {
       counts[step.id] = (answers[step.id] || []).filter(Boolean).length;
     });
-    const sorted = Object.entries(counts).sort(function (a, b) { return b[1] - a[1]; });
-    const primaryId = sorted[0][0];
-    const primaryScore = sorted[0][1];
-    const secondaryId = sorted[1][0];
-    const secondaryScore = sorted[1][1];
-    const showSecondary = secondaryScore > 0 && primaryScore - secondaryScore <= 1;
+    const entries = Object.entries(counts);
+    const maxScore = Math.max.apply(null, entries.map(function (e) { return e[1]; }));
+    // Bei einem Gleichstand um den Spitzenplatz zufällig auswählen, statt immer
+    // dieselbe Kategorie zu bevorzugen (sonst würde bei jedem Unentschieden
+    // immer derselbe Antreiber gewinnen).
+    const topDrivers = entries.filter(function (e) { return e[1] === maxScore; }).map(function (e) { return e[0]; });
+    const primaryId = topDrivers[Math.floor(Math.random() * topDrivers.length)];
+    const rest = entries
+      .filter(function (e) { return e[0] !== primaryId; })
+      .sort(function (a, b) { return b[1] - a[1]; });
+    const secondaryId = rest.length ? rest[0][0] : null;
+    const secondaryScore = rest.length ? rest[0][1] : 0;
+    const showSecondary = secondaryScore > 0 && maxScore - secondaryScore <= 1;
     return { primaryId: primaryId, secondaryId: showSecondary ? secondaryId : null };
   }
 
