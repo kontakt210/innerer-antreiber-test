@@ -1,0 +1,514 @@
+<title>Innerer-Antreiber-Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --aubergine: #5D4552;
+    --cream: #FFF6EE;
+    --sage-light: #BFC4BB;
+    --mauve: #9D9196;
+    --sage-deep: #6E7D6E;
+    --gold: #C9A876;
+
+    --bg: var(--cream);
+    --surface: #FFFCF7;
+    --surface-strong: #F3ECE1;
+    --border: #E7DFD3;
+    --border-strong: var(--aubergine);
+    --fg: var(--aubergine);
+    --muted: var(--mauve);
+    --shadow: 0 1px 2px rgba(93, 69, 82, 0.06), 0 10px 28px rgba(93, 69, 82, 0.08);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    color: var(--fg);
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 20px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .kicker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--sage-deep);
+  }
+  .eyebrow { font-size: 0.85rem; color: var(--muted); }
+  h1 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    line-height: 1.2;
+    margin: 0;
+    text-wrap: balance;
+    color: var(--aubergine);
+  }
+  .script-accent {
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: 1.3em;
+    color: var(--gold);
+  }
+  .subtitle {
+    color: var(--muted);
+    margin: 0;
+    max-width: 58ch;
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--sage-deep), var(--gold));
+    transition: width 0.35s ease;
+  }
+
+  fieldset { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 18px; }
+  legend {
+    padding: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-wrap: balance;
+    color: var(--aubergine);
+  }
+  .legend-hint { font-size: 0.85rem; color: var(--muted); font-weight: 400; display: block; margin-top: 6px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 15px 18px;
+    background: var(--bg);
+    cursor: pointer;
+    line-height: 1.5;
+    font-size: 0.97rem;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover { border-color: var(--sage-deep); background: #FFFEFC; }
+  .option.selected { border-color: var(--border-strong); background: #FFFEFC; }
+  .option input { margin-top: 2px; accent-color: var(--aubergine); width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+
+  .nav-row { display: flex; justify-content: space-between; align-items: center; }
+  button {
+    font-family: inherit;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 13px 26px;
+    border-radius: 10px;
+    border: 1.5px solid var(--aubergine);
+    background: var(--aubergine);
+    color: var(--cream);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  button:hover { box-shadow: 0 4px 14px rgba(93, 69, 82, 0.25); transform: translateY(-1px); }
+  button:focus-visible, .option input:focus-visible, .link-button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  button.secondary { background: transparent; color: var(--aubergine); border: 1.5px solid var(--border); }
+  button.secondary:hover { border-color: var(--aubergine); box-shadow: none; transform: none; }
+  .link-button { background: none; border: none; padding: 0; color: var(--muted); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .link-button:hover { color: var(--sage-deep); }
+
+  .section { display: flex; flex-direction: column; gap: 10px; }
+  .section-label { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-deep); }
+
+  .permission {
+    border-left: 3px solid var(--gold);
+    background: var(--cream);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: "Dancing Script", cursive;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--aubergine);
+    line-height: 1.4;
+  }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; counter-reset: step; }
+  ol.steps li { counter-increment: step; display: flex; gap: 14px; align-items: flex-start; font-size: 0.97rem; line-height: 1.55; }
+  ol.steps li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    color: var(--aubergine);
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+
+  .secondary-note {
+    font-size: 0.92rem;
+    color: var(--fg);
+    background: var(--cream);
+    border: 1px dashed var(--sage-light);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 0;
+  }
+  .disclaimer { font-size: 0.82rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 20px; margin-top: 4px; line-height: 1.5; }
+</style>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+
+<script>
+(function () {
+  const h = React.createElement;
+  const useState = React.useState;
+
+  const STEPS = [
+    {
+      id: "stark",
+      legend: "Wie gehst Du mit eigenen Schwierigkeiten um?",
+      items: [
+        "Ich zeige selten, wenn mich etwas wirklich mitnimmt.",
+        "Um Hilfe zu bitten fällt mir schwer, selbst wenn ich sie bräuchte.",
+        "Ich funktioniere meistens weiter, auch wenn es mir eigentlich nicht gut geht."
+      ]
+    },
+    {
+      id: "perfekt",
+      legend: "Wie gehst Du mit Fehlern und Ergebnissen um?",
+      items: [
+        "Kleine Fehler beschäftigen mich oft noch lange danach.",
+        "Ich prüfe Dinge lieber zweimal zu viel als einmal zu wenig.",
+        "Wenn etwas nicht perfekt ist, fühlt es sich für mich an, als wäre es nicht gut genug."
+      ]
+    },
+    {
+      id: "allen-recht",
+      legend: "Wie verhältst Du Dich anderen gegenüber?",
+      items: [
+        "Ich sage öfter Ja, obwohl ich eigentlich Nein meine.",
+        "Die Zufriedenheit anderer ist mir oft wichtiger als meine eigene.",
+        "Konflikte vermeide ich, wo immer es geht."
+      ]
+    },
+    {
+      id: "beeil-dich",
+      legend: "Wie fühlt sich Dein Tempo im Alltag an?",
+      items: [
+        "Ich habe oft das Gefühl, keine Zeit zu verlieren.",
+        "Auch in Pausen fühle ich mich selten wirklich entspannt.",
+        "Ich unterbreche andere manchmal, weil mir alles zu langsam geht."
+      ]
+    },
+    {
+      id: "anstrengen",
+      legend: "Was bedeutet Erfolg für Dich?",
+      items: [
+        "Dinge, die mir leichtfallen, fühlen sich für mich weniger wertvoll an.",
+        "Ich mache mir das Leben manchmal unnötig schwer.",
+        "Erfolg zählt für mich erst richtig, wenn er hart erarbeitet wurde."
+      ]
+    }
+  ];
+
+  const DRIVERS = {
+    stark: {
+      name: "Sei stark",
+      subtitle: "Verletzlichkeit zeigen fühlt sich riskant an",
+      description:
+        "Als Kind hast Du früh gelernt: Wer stark wirkt, bekommt Anerkennung — wer Schwäche zeigt, wird zur Last. Diese Strategie hat Dir damals geholfen, wenigstens etwas Zuwendung in Deine Bedürfniseimer zu bekommen. Heute hält sie Dich oft davon ab, andere überhaupt an Dich heranzulassen — was auf Dauer erschöpft, weil niemand in Deinen inneren Keller darf.",
+      permission: "Ich darf zeigen, wie es mir wirklich geht.",
+      recommendations: [
+        "Übe in einer kleinen, sicheren Situation, eine Schwierigkeit offen anzusprechen — bei einer Person, der Du vertraust.",
+        "Frag Dich bei der nächsten Belastung bewusst: Was würde ich jetzt wirklich brauchen — bevor Du automatisch weiterfunktionierst.",
+        "Erinnere Dich: Verletzlichkeit zu zeigen heißt nicht, die Kontrolle über Deinen inneren Keller zu verlieren — Du entscheidest weiterhin, wem Du wie viel zeigst."
+      ]
+    },
+    perfekt: {
+      name: "Sei perfekt",
+      subtitle: "Fehler fühlen sich wie ein Makel an",
+      description:
+        "Perfektion war früh Deine Strategie, um sicherzugehen, dass Dir niemand die Zuwendung entzieht. Jeder Fehler wirkte wie ein Risiko für die Füllung Deiner Eimer. Heute erzeugt dieser Anspruch oft mehr Druck, als er Dir Sicherheit bringt.",
+      permission: "Ich darf Fehler machen — sie machen mich nicht weniger wert.",
+      recommendations: [
+        "Setze Dir bewusst eine \"gut genug\"-Grenze für eine Aufgabe, statt automatisch auf \"perfekt\" zu gehen.",
+        "Frag Dich bei Selbstkritik: Würde ich das auch so streng zu jemandem sagen, den ich liebe?",
+        "Übe, einen kleinen Fehler bewusst stehen zu lassen, ohne ihn sofort zu korrigieren."
+      ]
+    },
+    "allen-recht": {
+      name: "Mach es allen recht",
+      subtitle: "Die eigenen Bedürfnisse kommen zuletzt",
+      description:
+        "Genau das Muster aus dem Bedürfniseimer-Modell: Du hast gelernt, zuerst die Bedürfnisse anderer zu erfüllen, um selbst Zuwendung zu bekommen. Das Risiko: Du lässt viele Menschen in Deinen inneren Keller, ohne dass sie ihn wirklich füllen — nur, weil Du es ihnen recht machen willst.",
+      permission: "Ich darf zuerst an mich denken, ohne egoistisch zu sein.",
+      recommendations: [
+        "Übe liebevolles Grenzensetzen im Kleinen: einmal bewusst \"Nein\" oder \"Ich melde mich später\" sagen.",
+        "Frag Dich vor dem nächsten automatischen \"Ja\": Will ich das wirklich — oder will ich nur, dass die andere Person zufrieden ist?",
+        "Erinnere Dich: Nicht jeder Mensch braucht Zugang zu Deinem inneren Keller — echte Nähe entsteht durch Auswahl, nicht durch Verfügbarkeit für alle."
+      ]
+    },
+    "beeil-dich": {
+      name: "Beeil dich",
+      subtitle: "Ruhe fühlt sich unproduktiv an",
+      description:
+        "Tempo war früh Dein Weg, wichtig oder gebraucht zu wirken — Stillstand fühlte sich an wie eine verpasste Chance auf Zuwendung. Heute fällt es Dir schwer, wirklich anzukommen, selbst wenn objektiv nichts eilt.",
+      permission: "Ich darf mir Zeit nehmen.",
+      recommendations: [
+        "Baue bewusst eine kurze Pause ohne konkretes Ziel in Deinen Tag ein — auch wenn sich das zunächst unangenehm anfühlt.",
+        "Übe Box-Atmung (4 Sekunden ein — 4 Sekunden halten — 4 Sekunden aus — 4 Sekunden Pause), um Deinem Nervensystem aktiv zu signalisieren: gerade ist keine Eile nötig.",
+        "Frag Dich bei Zeitdruck: Ist das eine echte Deadline — oder mein eigener Antreiber?"
+      ]
+    },
+    anstrengen: {
+      name: "Streng dich an",
+      subtitle: "Leichtigkeit fühlt sich unverdient an",
+      description:
+        "Du hast früh gelernt: Anerkennung kommt durch Anstrengung, nicht durch das Ergebnis allein. Das führt dazu, Dinge unbewusst schwerer zu machen, als sie sein müssten — Leichtigkeit fühlt sich fast wie Betrug an.",
+      permission: "Ich darf es mir leicht machen.",
+      recommendations: [
+        "Erlaube Dir bei der nächsten Aufgabe bewusst den einfachsten Weg — auch wenn ein Teil von Dir das für \"nicht genug\" hält.",
+        "Feiere ein Ergebnis, das Dir leichtgefallen ist, genauso wie eines, für das Du hart gekämpft hast.",
+        "Frag Dich: Wessen Stimme sagt mir eigentlich, dass es schwer sein muss, damit es zählt?"
+      ]
+    }
+  };
+
+  function computeResult(answers) {
+    const counts = {};
+    STEPS.forEach(function (step) {
+      counts[step.id] = (answers[step.id] || []).filter(Boolean).length;
+    });
+    const sorted = Object.entries(counts).sort(function (a, b) { return b[1] - a[1]; });
+    const primaryId = sorted[0][0];
+    const primaryScore = sorted[0][1];
+    const secondaryId = sorted[1][0];
+    const secondaryScore = sorted[1][1];
+    const showSecondary = secondaryScore > 0 && primaryScore - secondaryScore <= 1;
+    return { primaryId: primaryId, secondaryId: showSecondary ? secondaryId : null };
+  }
+
+  function Kicker() {
+    return h("div", { className: "kicker" }, "NeuroXpert Academy");
+  }
+
+  function IntroScreen(props) {
+    return h(
+      "div",
+      { className: "app" },
+      h(Kicker),
+      h("div", { className: "eyebrow" }, "Selbsttest · 5 kurze Abschnitte · ca. 3 Minuten"),
+      h("h1", null, h("span", { className: "script-accent" }, "Dein"), " innerer Antreiber"),
+      h(
+        "p",
+        { className: "subtitle" },
+        "5 Bereiche, je 3 Aussagen. Markiere, was auf Dich zutrifft — am Ende siehst Du, welcher innere Antreiber Dich prägt, woher er stammt und was Dir konkret hilft, ihn zu lockern."
+      ),
+      h(
+        "div",
+        { className: "card" },
+        h(
+          "p",
+          { style: { margin: 0 } },
+          "Es gibt keine richtigen oder falschen Antworten — nur Muster, die Du als Kind gelernt hast, um Anerkennung und Zuwendung zu bekommen. Sie zu erkennen ist der erste Schritt, sie zu lockern."
+        ),
+        h("div", null, h("button", { onClick: props.onStart }, "Test starten"))
+      )
+    );
+  }
+
+  function StepScreen(props) {
+    const step = props.step;
+    const selected = props.answers[step.id] || [false, false, false];
+    return h(
+      "div",
+      { className: "app" },
+      h(Kicker),
+      h(
+        "div",
+        { className: "progress-row" },
+        h("span", null, "Bereich " + (props.index + 1) + " von " + props.total),
+        h("span", null, Math.round(((props.index + 1) / props.total) * 100) + " %")
+      ),
+      h("div", { className: "progress-track" }, h("div", { className: "progress-fill", style: { width: Math.round(((props.index + 1) / props.total) * 100) + "%" } })),
+      h(
+        "div",
+        { className: "card" },
+        h(
+          "fieldset",
+          null,
+          h("legend", null, step.legend, h("span", { className: "legend-hint" }, "Mehrfachauswahl möglich")),
+          h(
+            "div",
+            { className: "options" },
+            step.items.map(function (item, i) {
+              return h(
+                "label",
+                { className: "option" + (selected[i] ? " selected" : ""), key: i },
+                h("input", {
+                  type: "checkbox",
+                  checked: selected[i],
+                  onChange: function () { props.onToggle(step.id, i); }
+                }),
+                h("span", null, item)
+              );
+            })
+          )
+        ),
+        h(
+          "div",
+          { className: "nav-row" },
+          props.index > 0
+            ? h("button", { className: "link-button", onClick: props.onBack }, "← Zurück")
+            : h("span", null),
+          h(
+            "button",
+            { onClick: props.onNext },
+            props.index + 1 === props.total ? "Ergebnis anzeigen" : "Weiter"
+          )
+        )
+      )
+    );
+  }
+
+  function ResultScreen(props) {
+    const primary = DRIVERS[props.result.primaryId];
+    const secondary = props.result.secondaryId ? DRIVERS[props.result.secondaryId] : null;
+    return h(
+      "div",
+      { className: "app" },
+      h(Kicker),
+      h("div", { className: "eyebrow" }, "Dein Ergebnis"),
+      h("h1", null, primary.name),
+      h("p", { className: "subtitle" }, primary.subtitle),
+      h(
+        "div",
+        { className: "card" },
+        h("p", { style: { margin: 0 } }, primary.description),
+        secondary
+          ? h(
+              "p",
+              { className: "secondary-note" },
+              "Zusätzlich zeigen sich bei Dir deutliche Anteile von \"" + secondary.name + "\" — innere Antreiber treten häufig gepaart auf."
+            )
+          : null,
+        h(
+          "div",
+          { className: "section" },
+          h("div", { className: "section-label" }, "Dein Erlaubersatz"),
+          h("div", { className: "permission" }, "„" + primary.permission + "“")
+        ),
+        h(
+          "div",
+          { className: "section" },
+          h("div", { className: "section-label" }, "Was Dir jetzt helfen kann"),
+          h(
+            "ol",
+            { className: "steps" },
+            primary.recommendations.map(function (r, i) { return h("li", { key: i }, r); })
+          )
+        )
+      ),
+      h("div", null, h("button", { className: "secondary", onClick: props.onReset }, "Test noch einmal starten")),
+      h(
+        "p",
+        { className: "disclaimer" },
+        "Dieser Test bietet eine erste Orientierung zu typischen inneren Antreibern und ersetzt keine Diagnostik, Therapie oder individuelle Beratung."
+      )
+    );
+  }
+
+  function App() {
+    const screenState = useState("intro");
+    const screen = screenState[0], setScreen = screenState[1];
+    const indexState = useState(0);
+    const index = indexState[0], setIndex = indexState[1];
+    const answersState = useState({});
+    const answers = answersState[0], setAnswers = answersState[1];
+
+    function startTest() {
+      setAnswers({});
+      setIndex(0);
+      setScreen("steps");
+    }
+
+    function toggle(stepId, itemIndex) {
+      const current = answers[stepId] || [false, false, false];
+      const next = current.slice();
+      next[itemIndex] = !next[itemIndex];
+      const nextAnswers = Object.assign({}, answers);
+      nextAnswers[stepId] = next;
+      setAnswers(nextAnswers);
+    }
+
+    function goNext() {
+      if (index + 1 < STEPS.length) {
+        setIndex(index + 1);
+      } else {
+        setScreen("result");
+      }
+    }
+
+    function goBack() {
+      setIndex(index - 1);
+    }
+
+    if (screen === "intro") {
+      return h(IntroScreen, { onStart: startTest });
+    }
+    if (screen === "steps") {
+      return h(StepScreen, {
+        step: STEPS[index],
+        index: index,
+        total: STEPS.length,
+        answers: answers,
+        onToggle: toggle,
+        onNext: goNext,
+        onBack: goBack
+      });
+    }
+    const result = computeResult(answers);
+    return h(ResultScreen, { result: result, onReset: startTest });
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+})();
+</script>
